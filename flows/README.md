@@ -5,4 +5,12 @@
 `prefect config set PREFECT_API_URL=http://127.0.0.1:4200/api`
 Vist http://127.0.0.1:4200/
 
-`prefect block register -m prefect-gcp`
+
+`prefect block register -m prefect_gcp`
+
+<create GCS credentials block, using service account creds>
+GCP > IAM > Service Accounts
+
+
+
+
