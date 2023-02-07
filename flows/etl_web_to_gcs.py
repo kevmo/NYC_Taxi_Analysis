@@ -15,8 +15,8 @@ def fetch(dataset_url):
 @task(log_prints=True)
 def clean(df: pd.DataFrame) -> pd.DataFrame:
     """Fix dtype issues"""
-    df["tpep_pickup_datetime"] = pd.to_datetime(df["tpep_pickup_datetime"])
-    df["tpep_dropoff_datetime"] = pd.to_datetime(df["tpep_dropoff_datetime"])
+    df["lpep_pickup_datetime"] = pd.to_datetime(df["lpep_pickup_datetime"])
+    df["lpep_dropoff_datetime"] = pd.to_datetime(df["lpep_dropoff_datetime"])
     print("------------LOGGIN'----------------------")
     print(df.head(2))
     print(f"columns: {df.dtypes}")
@@ -28,13 +28,17 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
 def write_local(df: pd.DataFrame, color: str, dataset_file: str) -> Path:
     """Write DataFrame out locally as parquet file"""
     path = Path(f"data/{color}/{dataset_file}")
-    df.to_parquet(path, compress="gzip")
+    
+    if not path.parent.is_dir():
+        path.parent.mkdir(parents=True)
+
+    df.to_parquet(path, compression="gzip")
     return path 
 
 @task(log_prints=True)
 def write_gcs(path:Path) -> None:
     """Upload local Parquet file to GCS"""
-    GcsBucket.load("zoomcamp-bucket")
+    gcs_block = GcsBucket.load("zoomcamp-bucket")
     gcs_block.upload_from_path(from_path=path, to_path=path)
     return
 
@@ -45,9 +49,12 @@ def etl_web_to_gcs() -> None:
     color = "green"
     year = 2020
     month = 1
-    dataset_file = f"{color}_tripdata_{year}-{month:02}"
-    dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{color}/{dataset_file}.csv.gz"
+    # dataset_file = f"{color}_tripdata_{year}-{month:02}"
 
+    # dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{color}/{dataset_file}.csv.gz"
+
+    dataset_url = "https://github.com/DataTalksClub/nyc-tlc-data/releases/download/green/green_tripdata_2020-01.csv.gz"
+    dataset_file = "green_tripdata_2020-01"
 
     df = fetch(dataset_url)
     df_clean = clean(df)
