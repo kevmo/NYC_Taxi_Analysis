@@ -6,17 +6,26 @@ from prefect_gcp.cloud_storage import GcsBucket
 from prefect_gcp import GcpCredentials
 
 
-@task(retries=3)
+@task(retries=1)
 def extract_from_gcs(color: str, year: int, month: int) -> Path:
     """Download trip data from GCS"""
     gcs_path = f"data/{color}/{color}_tripdata_{year}-{month:02}.parquet"
-    gcs_block = GcsBucket.load("zoomcamp-bucket")
-    gcs_block.get_directory(from_path=gcs_path, local_path=f"../data/")
 
-    # if not path.parent.is_dir():
+    gcs_block = GcsBucket.load("zoomcamp-bucket")
+
+    gcs_block.get_directory(from_path=gcs_path)
+    # , local_path=f"../data/"
+
+    # if not gcs_path.parent.is_dir():
     #     gcs_path.parent.mkdir(parents=True)
 
-    return Path(f"../data/{gcs_path}")
+
+    print("------PATH ---------------")
+    print("------PATH ---------------")
+    print("------PATH ---------------")
+    print(Path(f"./{gcs_path}"))
+
+    return Path(f"./{gcs_path}")
 
 
 @task()
@@ -37,7 +46,7 @@ def write_bq(df: pd.DataFrame) -> None:
 
     df.to_gbq(
         destination_table="dezoomcamp.rides",
-        project_id="prefect-sbx-community-eng",
+        project_id="taxi-rides-ny-375722",
         credentials=gcp_credentials_block.get_credentials_from_service_account(),
         chunksize=500_000,
         if_exists="append",
@@ -49,7 +58,7 @@ def etl_gcs_to_bq():
     """Main ETL flow to load data into Big Query"""
     color = "yellow"
     year = 2019
-    month = 2
+    month = 3
 
     path = extract_from_gcs(color, year, month)
     df = transform(path)
