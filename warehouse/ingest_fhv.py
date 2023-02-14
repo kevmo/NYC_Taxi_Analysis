@@ -16,9 +16,9 @@ def main_flow(month):
                     # https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhv/fhv_tripdata_2019-01.csv.gz
 
     # dataset_url = Path("https://github.com/DataTalksClub/nyc-tlc-data/releases/download/fhv/fhv_tripdata_2019-01.csv.gz")
-    path = Path("data/fhv_tripdata_2019-{month}.csv.gz")
+    path = Path(f"data/fhv_tripdata_2019-{month}.csv.gz")
     ingest_web_to_gcs(path)
 
 if __name__ == "__main__":
     for month in ["03", "04","05","06", "07", "08", "09","10", "11", "12"]:
-        main_flow()
+        main_flow(month)
